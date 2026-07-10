@@ -4,47 +4,20 @@ const ordersStore = require('../services/ordersStore');
 // GET /api/dashboard - Get dashboard metrics
 const getDashboard = async (req, res) => {
     try {
-        const fs = require('fs');
-        const path = require('path');
+        const { data: products, error: prodErr } = await supabase
+            .from('products')
+            .select('price, inventory, featured, category');
+        if (prodErr) throw prodErr;
+        const safeProducts = products || [];
 
-        let safeProducts = [];
-        let safeInquiries = [];
+        const { data: inquiries, error: inqErr } = await supabase
+            .from('inquiries')
+            .select('status');
+        if (inqErr) throw inqErr;
+        const safeInquiries = inquiries || [];
 
-        try {
-            const { data: products, error: prodErr } = await supabase
-                .from('products')
-                .select('price, inventory, featured, category');
-            if (prodErr) throw prodErr;
-            safeProducts = products || [];
-        } catch (err) {
-            console.warn('⚠️  products table not found in Supabase. Using local JSON fallback.');
-            const productsPath = path.join(__dirname, '../data/products.json');
-            if (fs.existsSync(productsPath)) {
-                safeProducts = JSON.parse(fs.readFileSync(productsPath, 'utf-8'));
-            }
-        }
-
-        try {
-            const { data: inquiries, error: inqErr } = await supabase
-                .from('inquiries')
-                .select('status');
-            if (inqErr) throw inqErr;
-            safeInquiries = inquiries || [];
-        } catch (err) {
-            console.warn('⚠️  inquiries table not found in Supabase. Using local JSON fallback.');
-            const inquiriesPath = path.join(__dirname, '../data/inquiries.json');
-            if (fs.existsSync(inquiriesPath)) {
-                safeInquiries = JSON.parse(fs.readFileSync(inquiriesPath, 'utf-8'));
-            }
-        }
-
-        // Fetch actual orders
-        let orders = [];
-        try {
-            orders = await ordersStore.getAll();
-        } catch (err) {
-            console.warn('Could not load orders for dashboard metrics:', err.message);
-        }
+        // Fetch actual orders directly from Supabase via ordersStore
+        const orders = await ordersStore.getAll();
 
         // Calculate revenue metrics
         let totalRevenue = 0;

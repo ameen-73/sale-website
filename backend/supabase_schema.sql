@@ -48,12 +48,14 @@ ALTER TABLE public.inquiries ENABLE ROW LEVEL SECURITY;
 -- 5. CREATE POLICIES
 
 -- Products policies
+DROP POLICY IF EXISTS "Allow public read access to products" ON public.products;
 CREATE POLICY "Allow public read access to products" 
 ON public.products 
 FOR SELECT 
 TO public 
 USING (true);
 
+DROP POLICY IF EXISTS "Allow all access to products for service role" ON public.products;
 CREATE POLICY "Allow all access to products for service role" 
 ON public.products 
 FOR ALL 
@@ -62,12 +64,14 @@ USING (true)
 WITH CHECK (true);
 
 -- Inquiries policies
+DROP POLICY IF EXISTS "Allow public insert access to inquiries" ON public.inquiries;
 CREATE POLICY "Allow public insert access to inquiries" 
 ON public.inquiries 
 FOR INSERT 
 TO public 
 WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow all access to inquiries for service role" ON public.inquiries;
 CREATE POLICY "Allow all access to inquiries for service role" 
 ON public.inquiries 
 FOR ALL 
@@ -114,12 +118,14 @@ CREATE TABLE IF NOT EXISTS public.orders (
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
 -- Create Policies
+DROP POLICY IF EXISTS "Allow public insert access to orders" ON public.orders;
 CREATE POLICY "Allow public insert access to orders" 
 ON public.orders 
 FOR INSERT 
 TO public 
 WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow all access to orders for service role" ON public.orders;
 CREATE POLICY "Allow all access to orders for service role" 
 ON public.orders 
 FOR ALL 
