@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { productsAPI, formatPrice } from '../../lib/api';
 import ProductCard from '../../components/shop/ProductCard';
 import Link from 'next/link';
@@ -12,6 +13,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function ShopPage() {
+    const router = useRouter();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [category, setCategory] = useState('All');
@@ -19,6 +21,19 @@ export default function ShopPage() {
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState(null);
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+    // Sync state with URL query parameter on load/navigation
+    useEffect(() => {
+        if (router.isReady) {
+            const queryCat = router.query.category;
+            if (queryCat) {
+                setCategory(queryCat);
+            } else {
+                setCategory('All');
+            }
+            setPage(1);
+        }
+    }, [router.isReady, router.query.category]);
 
     useEffect(() => {
         async function loadProducts() {
@@ -38,12 +53,23 @@ export default function ShopPage() {
             }
             setLoading(false);
         }
-        loadProducts();
-    }, [category, sort, page]);
+        if (router.isReady) {
+            loadProducts();
+        }
+    }, [category, sort, page, router.isReady]);
 
     const handleCategoryChange = (cat) => {
         setCategory(cat);
         setPage(1);
+
+        // Sync URL query parameter
+        const query = { ...router.query };
+        if (cat === 'All') {
+            delete query.category;
+        } else {
+            query.category = cat;
+        }
+        router.push({ pathname: '/shop', query }, undefined, { shallow: true });
     };
 
     return (

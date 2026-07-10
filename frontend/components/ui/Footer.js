@@ -91,13 +91,19 @@ export default function Footer() {
                         &copy; {new Date().getFullYear()} AURA. All rights reserved.
                     </p>
                     <div className="flex items-center space-x-6">
-                        {['Instagram', 'Pinterest', 'Facebook'].map((social) => (
+                        {[
+                            { name: 'Instagram', url: 'https://instagram.com' },
+                            { name: 'Pinterest', url: 'https://pinterest.com' },
+                            { name: 'Facebook', url: 'https://facebook.com' },
+                        ].map((social) => (
                             <a
-                                key={social}
-                                href="#"
+                                key={social.name}
+                                href={social.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="text-xs text-aura-muted hover:text-aura-text transition-colors duration-300"
                             >
-                                {social}
+                                {social.name}
                             </a>
                         ))}
                     </div>

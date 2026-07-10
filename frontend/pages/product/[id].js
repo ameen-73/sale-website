@@ -12,7 +12,9 @@ export default function ProductDetail() {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(0);
-    const { addToCart, addRecentlyViewed } = useApp();
+    const [quantity, setQuantity] = useState(1);
+    const { addToCart, addRecentlyViewed, toggleWishlist, wishlist } = useApp();
+    const isWishlisted = product ? wishlist.some(item => item.id === product.id) : false;
 
     useEffect(() => {
         if (!id) return;
@@ -126,14 +128,32 @@ export default function ProductDetail() {
                         {product.inventory > 0 && (
                             <div className="flex items-center justify-between text-sm py-3 border-b border-aura-border">
                                 <span className="text-aura-muted">Quantity</span>
-                                <span className="font-medium">{product.inventory} available</span>
+                                <div className="flex items-center border border-aura-border rounded-xl">
+                                    <button
+                                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                        className="px-3 py-1.5 text-aura-muted hover:text-aura-text transition-colors"
+                                    >
+                                        −
+                                    </button>
+                                    <span className="px-4 py-1.5 text-sm font-medium min-w-[2rem] text-center">{quantity}</span>
+                                    <button
+                                        onClick={() => setQuantity(q => Math.min(product.inventory, q + 1))}
+                                        className="px-3 py-1.5 text-aura-muted hover:text-aura-text transition-colors"
+                                    >
+                                        +
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
 
                     <div className="flex gap-4">
                         <button
-                            onClick={() => addToCart(product)}
+                            onClick={() => {
+                                for (let i = 0; i < quantity; i++) {
+                                    addToCart(product);
+                                }
+                            }}
                             disabled={product.inventory === 0}
                             className="btn-primary flex-1 disabled:opacity-50"
                         >
@@ -141,13 +161,26 @@ export default function ProductDetail() {
                         </button>
                         <button
                             onClick={() => {
-                                addToCart(product);
+                                for (let i = 0; i < quantity; i++) {
+                                    addToCart(product);
+                                }
                                 router.push('/checkout');
                             }}
                             disabled={product.inventory === 0}
                             className="btn-secondary flex-1 disabled:opacity-50"
                         >
                             Buy Now
+                        </button>
+                        <button
+                            onClick={() => toggleWishlist(product)}
+                            className={`px-4 py-3 border rounded-xl transition-all duration-300 hover:scale-105 ${
+                                isWishlisted ? 'border-red-300 bg-red-50' : 'border-aura-border hover:border-aura-text'
+                            }`}
+                            aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                        >
+                            <svg className={`w-5 h-5 ${isWishlisted ? 'text-red-500 fill-red-500' : 'text-aura-muted'}`} fill={isWishlisted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
                         </button>
                     </div>
 

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { productsAPI, formatPrice } from '../../lib/api';
+import { useApp } from '../../hooks/useAppContext';
 import AdminGuard from '../../components/admin/AdminGuard';
 
 function AdminProductsContent() {
+    const { addToast } = useApp();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -47,8 +49,14 @@ function AdminProductsContent() {
 
     const handleDelete = async (id) => {
         if (confirm('Delete this product?')) {
-            await productsAPI.delete(id);
-            loadProducts();
+            try {
+                await productsAPI.delete(id);
+                addToast('Product deleted successfully', 'success');
+                loadProducts();
+            } catch (err) {
+                console.error('Failed to delete:', err);
+                addToast('Failed to delete product', 'error');
+            }
         }
     };
 
@@ -61,13 +69,20 @@ function AdminProductsContent() {
             images: form.images.split(',').map(s => s.trim()).filter(Boolean),
         };
 
-        if (editing) {
-            await productsAPI.update(editing, payload);
-        } else {
-            await productsAPI.create(payload);
+        try {
+            if (editing) {
+                await productsAPI.update(editing, payload);
+                addToast('Product updated successfully', 'success');
+            } else {
+                await productsAPI.create(payload);
+                addToast('Product created successfully', 'success');
+            }
+            setShowModal(false);
+            loadProducts();
+        } catch (err) {
+            console.error('Failed to save:', err);
+            addToast('Failed to save product', 'error');
         }
-        setShowModal(false);
-        loadProducts();
     };
 
     return (

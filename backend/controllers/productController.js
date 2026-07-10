@@ -154,11 +154,11 @@ const updateProduct = (req, res) => {
 
         products[index] = {
             ...products[index],
-            ...(title && { title }),
-            ...(category && { category }),
-            ...(price && { price: Number(price) }),
-            ...(description && { description }),
-            ...(images && { images }),
+            ...(title !== undefined && { title }),
+            ...(category !== undefined && { category }),
+            ...(price !== undefined && { price: Number(price) }),
+            ...(description !== undefined && { description }),
+            ...(images !== undefined && { images }),
             ...(inventory !== undefined && { inventory: Number(inventory) }),
             ...(featured !== undefined && { featured }),
             updatedAt: new Date().toISOString()
