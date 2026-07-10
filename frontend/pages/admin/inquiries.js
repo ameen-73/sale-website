@@ -70,7 +70,11 @@ function AdminInquiriesContent() {
                     <p className="label-sm mb-2">Admin</p>
                     <h1 className="heading-lg">Custom Inquiries</h1>
                 </div>
-                <Link href="/admin" className="btn-outline text-xs">Dashboard</Link>
+                <div className="flex gap-3">
+                    <Link href="/admin" className="btn-outline text-xs">Dashboard</Link>
+                    <Link href="/admin/products" className="btn-outline text-xs">Products</Link>
+                    <Link href="/admin/orders" className="btn-outline text-xs">Orders</Link>
+                </div>
             </div>
 
             {/* Filters */}

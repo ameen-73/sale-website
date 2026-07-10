@@ -1,26 +1,72 @@
 const supabase = require('../services/supabase');
+const ordersStore = require('../services/ordersStore');
 
 // GET /api/dashboard - Get dashboard metrics
 const getDashboard = async (req, res) => {
     try {
-        // Fetch only necessary fields for calculations to keep response lightweight
-        const { data: products, error: prodErr } = await supabase
-            .from('products')
-            .select('price, inventory, featured, category');
+        const fs = require('fs');
+        const path = require('path');
 
-        const { data: inquiries, error: inqErr } = await supabase
-            .from('inquiries')
-            .select('status');
+        let safeProducts = [];
+        let safeInquiries = [];
 
-        if (prodErr) throw prodErr;
-        if (inqErr) throw inqErr;
+        try {
+            const { data: products, error: prodErr } = await supabase
+                .from('products')
+                .select('price, inventory, featured, category');
+            if (prodErr) throw prodErr;
+            safeProducts = products || [];
+        } catch (err) {
+            console.warn('⚠️  products table not found in Supabase. Using local JSON fallback.');
+            const productsPath = path.join(__dirname, '../data/products.json');
+            if (fs.existsSync(productsPath)) {
+                safeProducts = JSON.parse(fs.readFileSync(productsPath, 'utf-8'));
+            }
+        }
 
-        const safeProducts = products || [];
-        const safeInquiries = inquiries || [];
+        try {
+            const { data: inquiries, error: inqErr } = await supabase
+                .from('inquiries')
+                .select('status');
+            if (inqErr) throw inqErr;
+            safeInquiries = inquiries || [];
+        } catch (err) {
+            console.warn('⚠️  inquiries table not found in Supabase. Using local JSON fallback.');
+            const inquiriesPath = path.join(__dirname, '../data/inquiries.json');
+            if (fs.existsSync(inquiriesPath)) {
+                safeInquiries = JSON.parse(fs.readFileSync(inquiriesPath, 'utf-8'));
+            }
+        }
+
+        // Fetch actual orders
+        let orders = [];
+        try {
+            orders = await ordersStore.getAll();
+        } catch (err) {
+            console.warn('Could not load orders for dashboard metrics:', err.message);
+        }
 
         // Calculate revenue metrics
-        const totalRevenue = safeProducts.reduce((sum, p) => sum + (Number(p.price) * (Number(p.inventory) > 0 ? 1 : 0)), 0);
-        const todayRevenue = Math.round(totalRevenue * 0.05); // Simulated today's revenue
+        let totalRevenue = 0;
+        let todayRevenue = 0;
+        let totalOrders = 0;
+
+        if (orders.length > 0) {
+            totalOrders = orders.length;
+            // Sum total order values where status is not cancelled
+            const activeOrders = orders.filter(o => o.orderStatus !== 'cancelled');
+            totalRevenue = activeOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+            
+            // Calculate today's revenue (created in the last 24 hours)
+            const today = new Date();
+            const oneDayAgo = new Date(today.getTime() - (24 * 60 * 60 * 1000));
+            const todayOrders = activeOrders.filter(o => new Date(o.createdAt) >= oneDayAgo);
+            todayRevenue = todayOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+        } else {
+            // Fallback to simulated metrics if no orders exist yet
+            totalRevenue = safeProducts.reduce((sum, p) => sum + (Number(p.price) * (Number(p.inventory) > 0 ? 1 : 0)), 0);
+            todayRevenue = Math.round(totalRevenue * 0.05);
+        }
 
         // Product metrics
         const totalProducts = safeProducts.length;
@@ -41,13 +87,44 @@ const getDashboard = async (req, res) => {
             }
         });
 
-        // Monthly revenue simulation (last 6 months)
+        // Monthly revenue (last 6 months)
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-        const monthlyRevenue = months.map((month, i) => ({
-            month,
-            revenue: Math.round(totalRevenue * (0.1 + (i * 0.03))),
-            orders: Math.round(10 + (i * 3))
-        }));
+        let monthlyRevenue = [];
+
+        if (orders.length > 0) {
+            const monthsMap = {};
+            const now = new Date();
+            // Initialize last 6 months dynamically
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthName = d.toLocaleString('default', { month: 'short' });
+                monthsMap[monthName] = { revenue: 0, orders: 0 };
+            }
+
+            orders.forEach(o => {
+                if (o.orderStatus !== 'cancelled') {
+                    const date = new Date(o.createdAt);
+                    const monthName = date.toLocaleString('default', { month: 'short' });
+                    if (monthsMap[monthName] !== undefined) {
+                        monthsMap[monthName].orders += 1;
+                        monthsMap[monthName].revenue += Number(o.total || 0);
+                    }
+                }
+            });
+
+            monthlyRevenue = Object.entries(monthsMap).map(([month, data]) => ({
+                month,
+                revenue: Math.round(data.revenue),
+                orders: data.orders
+            }));
+        } else {
+            // Simulated monthly revenue fallback
+            monthlyRevenue = months.map((month, i) => ({
+                month,
+                revenue: Math.round(totalRevenue * (0.1 + (i * 0.03))),
+                orders: Math.round(10 + (i * 3))
+            }));
+        }
 
         // Fetch recent inquiries from database for dynamic activity feed
         const { data: recentInquiries } = await supabase
@@ -57,19 +134,33 @@ const getDashboard = async (req, res) => {
             .limit(2);
 
         const recentActivity = [];
+
+        // Add actual orders to activity feed
+        if (orders.length > 0) {
+            orders.slice(0, 3).forEach(o => {
+                recentActivity.push({
+                    type: 'order',
+                    message: `Order ${o.id} placed by ${o.customerName} (${o.orderStatus})`,
+                    time: formatTimeAgo(o.createdAt)
+                });
+            });
+        }
+
+        // Add inquiries to activity feed
         if (recentInquiries && recentInquiries.length > 0) {
             recentInquiries.forEach(inq => {
-                recentActivity.push({
-                    type: 'inquiry',
-                    message: `New inquiry from ${inq.name}`,
-                    time: formatTimeAgo(inq.createdAt)
-                });
+                if (recentActivity.length < 5) {
+                    recentActivity.push({
+                        type: 'inquiry',
+                        message: `New inquiry from ${inq.name}`,
+                        time: formatTimeAgo(inq.createdAt)
+                    });
+                }
             });
         }
 
         // Add static items to populate timeline
         const staticActivities = [
-            { type: 'order', message: 'Order #ORD-0042 completed', time: '4 hours ago' },
             { type: 'product', message: 'Nova pendant light inventory updated', time: '6 hours ago' },
             { type: 'product', message: 'New product added: Arc floor light', time: '2 days ago' },
         ];

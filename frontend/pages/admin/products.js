@@ -94,7 +94,9 @@ function AdminProductsContent() {
                 </div>
                 <div className="flex gap-3">
                     <Link href="/admin" className="btn-outline text-xs">Dashboard</Link>
-                    <button onClick={handleCreate} className="btn-primary text-xs">Add Product</button>
+                    <Link href="/admin/inquiries" className="btn-outline text-xs">Inquiries</Link>
+                    <Link href="/admin/orders" className="btn-outline text-xs">Orders</Link>
+                    <button onClick={handleCreate} className="btn-primary text-xs font-medium">Add Product</button>
                 </div>
             </div>
 

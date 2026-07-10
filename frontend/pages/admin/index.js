@@ -98,6 +98,7 @@ function AdminDashboardContent() {
                 <div className="flex items-center gap-3">
                     <Link href="/admin/products" className="btn-outline text-xs">Products</Link>
                     <Link href="/admin/inquiries" className="btn-outline text-xs">Inquiries</Link>
+                    <Link href="/admin/orders" className="btn-outline text-xs">Orders & Billing</Link>
                 </div>
             </div>
 

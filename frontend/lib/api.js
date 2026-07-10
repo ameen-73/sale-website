@@ -85,6 +85,31 @@ export const dashboardAPI = {
     get: () => fetchAPI('/dashboard'),
 };
 
+// Orders API
+export const ordersAPI = {
+    getAll: (params = {}) => {
+        const query = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                query.append(key, value);
+            }
+        });
+        return fetchAPI(`/orders?${query.toString()}`);
+    },
+
+    getById: (id) => fetchAPI(`/orders/${id}`),
+
+    create: (order) => fetchAPI('/orders', {
+        method: 'POST',
+        body: JSON.stringify(order),
+    }),
+
+    update: (id, data) => fetchAPI(`/orders/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
+};
+
 // Format price in INR
 export const formatPrice = (price) => {
     return new Intl.NumberFormat('en-IN', {
