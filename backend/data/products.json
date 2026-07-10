@@ -1,0 +1,270 @@
+[
+    {
+        "id": "prod-001",
+        "title": "Aura Ring chandelier",
+        "category": "Fancy Lighting",
+        "price": 18900,
+        "description": "A premium three-tier nested geometric chandelier carved from solid walnut wood with integrated dimmable LED warm ring lights.",
+        "images": [
+            "/images/ring-chandelier.jpg"
+        ],
+        "inventory": 12,
+        "featured": true,
+        "createdAt": "2025-01-15T10:00:00.000Z",
+        "updatedAt": "2025-01-15T10:00:00.000Z",
+        "rating": 4.8,
+        "reviews": []
+    },
+    {
+        "id": "prod-002",
+        "title": "Lumina floor lamp",
+        "category": "Fancy Lighting",
+        "price": 24500,
+        "description": "An elegant floor lamp with a sculptural matte black stem and an ivory linen shade. Its tall, slender profile makes it an ideal accent piece for living rooms and reading corners.",
+        "images": [
+            "https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=800",
+            "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800"
+        ],
+        "inventory": 8,
+        "featured": true,
+        "createdAt": "2025-01-20T10:00:00.000Z",
+        "updatedAt": "2025-01-20T10:00:00.000Z",
+        "rating": 4.9,
+        "reviews": []
+    },
+    {
+        "id": "prod-003",
+        "title": "Solis cane table lamp",
+        "category": "Fancy Lighting",
+        "price": 12400,
+        "description": "A rectangular column table lamp handcrafted from premium dark walnut and woven cane mesh grids, casting beautiful textured patterns of warm ambient light.",
+        "images": [
+            "/images/table-lamp.jpg"
+        ],
+        "inventory": 20,
+        "featured": true,
+        "createdAt": "2025-02-01T10:00:00.000Z",
+        "updatedAt": "2025-02-01T10:00:00.000Z",
+        "rating": 4.7,
+        "reviews": []
+    },
+    {
+        "id": "prod-004",
+        "title": "Trio Wood wall sconce",
+        "category": "Modern Architectural Lighting",
+        "price": 15800,
+        "description": "A luxury wall-mounted solid wood light fixture featuring three linen pendant lamps suspended with natural jute ropes, creating a warm, organic accent.",
+        "images": [
+            "/images/wall-lamp.jpg"
+        ],
+        "inventory": 15,
+        "featured": true,
+        "createdAt": "2025-02-10T10:00:00.000Z",
+        "updatedAt": "2025-02-10T10:00:00.000Z",
+        "rating": 4.6,
+        "reviews": []
+    },
+    {
+        "id": "prod-005",
+        "title": "Italian espresso machine",
+        "category": "Premium Home Appliances",
+        "price": 67500,
+        "description": "A professional-grade espresso machine with a brushed stainless steel body and walnut wood accents. Features dual boilers, PID temperature control, and an integrated grinder.",
+        "images": [
+            "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800",
+            "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800"
+        ],
+        "inventory": 5,
+        "featured": true,
+        "createdAt": "2025-02-15T10:00:00.000Z",
+        "updatedAt": "2025-02-15T10:00:00.000Z",
+        "rating": 4.9,
+        "reviews": []
+    },
+    {
+        "id": "prod-006",
+        "title": "Smart air purifier",
+        "category": "Premium Home Appliances",
+        "price": 34200,
+        "description": "A minimalist air purifier with a sleek monolith design. HEPA H13 filtration, whisper-quiet operation, and smart sensors that adjust purification levels automatically.",
+        "images": [
+            "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800",
+            "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800"
+        ],
+        "inventory": 10,
+        "featured": false,
+        "createdAt": "2025-02-20T10:00:00.000Z",
+        "updatedAt": "2025-02-20T10:00:00.000Z",
+        "rating": 4.5,
+        "reviews": []
+    },
+    {
+        "id": "prod-007",
+        "title": "Thermal carafe set",
+        "category": "Premium Home Appliances",
+        "price": 8900,
+        "description": "A double-walled thermal carafe set with a matte ceramic exterior and a vacuum-insulated interior. Keeps beverages hot or cold for up to 12 hours. Set includes two serving cups.",
+        "images": [
+            "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800",
+            "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800"
+        ],
+        "inventory": 25,
+        "featured": false,
+        "createdAt": "2025-03-01T10:00:00.000Z",
+        "updatedAt": "2025-03-01T10:00:00.000Z",
+        "rating": 4.4,
+        "reviews": []
+    },
+    {
+        "id": "prod-008",
+        "title": "Marble fruit bowl",
+        "category": "Premium Decorative Objects",
+        "price": 7200,
+        "description": "A sculptural fruit bowl carved from a single block of Carrara marble. The organic form contrasts beautifully with the precision-polished surface, making it both functional and artistic.",
+        "images": [
+            "https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=800",
+            "https://images.unsplash.com/photo-1517999348451-5bfe9356039b?w=800"
+        ],
+        "inventory": 18,
+        "featured": true,
+        "createdAt": "2025-03-05T10:00:00.000Z",
+        "updatedAt": "2025-03-05T10:00:00.000Z",
+        "rating": 4.7,
+        "reviews": []
+    },
+    {
+        "id": "prod-009",
+        "title": "Brass candlestick trio",
+        "category": "Premium Decorative Objects",
+        "price": 5600,
+        "description": "A set of three hand-turned brass candlesticks in varying heights. The natural patina develops over time, adding character to an already timeless design.",
+        "images": [
+            "https://images.unsplash.com/photo-1517999348451-5bfe9356039b?w=800",
+            "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800"
+        ],
+        "inventory": 30,
+        "featured": false,
+        "createdAt": "2025-03-10T10:00:00.000Z",
+        "updatedAt": "2025-03-10T10:00:00.000Z",
+        "rating": 4.6,
+        "reviews": []
+    },
+    {
+        "id": "prod-010",
+        "title": "Ceramic vase large",
+        "category": "Premium Decorative Objects",
+        "price": 10400,
+        "description": "A large ceramic vase with a matte glaze and an organic silhouette. Each piece is individually thrown on a wheel, ensuring no two are exactly alike.",
+        "images": [
+            "https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=800",
+            "https://images.unsplash.com/photo-1517999348451-5bfe9356039b?w=800"
+        ],
+        "inventory": 14,
+        "featured": true,
+        "createdAt": "2025-03-15T10:00:00.000Z",
+        "updatedAt": "2025-03-15T10:00:00.000Z",
+        "rating": 4.8,
+        "reviews": []
+    },
+    {
+        "id": "prod-011",
+        "title": "Minimalist wall clock",
+        "category": "Premium Decorative Objects",
+        "price": 13500,
+        "description": "A silent quartz wall clock with a matte white face and precision-machined aluminum hands. The minimalist design makes it a subtle yet sophisticated addition to any room.",
+        "images": [
+            "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800",
+            "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800"
+        ],
+        "inventory": 22,
+        "featured": false,
+        "createdAt": "2025-03-20T10:00:00.000Z",
+        "updatedAt": "2025-03-20T10:00:00.000Z",
+        "rating": 4.5,
+        "reviews": []
+    },
+    {
+        "id": "prod-012",
+        "title": "Arc floor light",
+        "category": "Modern Architectural Lighting",
+        "price": 28900,
+        "description": "A dramatic arc floor lamp with a polished chrome stem and a large, dome-shaped shade. The sweeping curve creates a stunning architectural statement in any space.",
+        "images": [
+            "https://images.unsplash.com/photo-1517999348451-5bfe9356039b?w=800",
+            "https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=800"
+        ],
+        "inventory": 7,
+        "featured": false,
+        "createdAt": "2025-03-25T10:00:00.000Z",
+        "updatedAt": "2025-03-25T10:00:00.000Z",
+        "rating": 4.9,
+        "reviews": []
+    },
+    {
+        "id": "prod-013",
+        "title": "LED panel system",
+        "category": "Modern Architectural Lighting",
+        "price": 42300,
+        "description": "A modular LED panel system that can be configured in endless patterns. Each panel offers adjustable color temperature and brightness, controlled via app or voice.",
+        "images": [
+            "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800",
+            "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800"
+        ],
+        "inventory": 4,
+        "featured": false,
+        "createdAt": "2025-04-01T10:00:00.000Z",
+        "updatedAt": "2025-04-01T10:00:00.000Z",
+        "rating": 4.7,
+        "reviews": []
+    },
+    {
+        "id": "prod-014",
+        "title": "Orbital pillar light",
+        "category": "Modern Architectural Lighting",
+        "price": 19800,
+        "description": "An outdoor glowing sphere path light mounted on a wooden X-stand atop a textured stone pillar, ideal for luxury garden pathways and patios.",
+        "images": [
+            "/images/outdoor-light.jpg"
+        ],
+        "inventory": 11,
+        "featured": false,
+        "createdAt": "2025-04-05T10:00:00.000Z",
+        "updatedAt": "2025-04-05T10:00:00.000Z",
+        "rating": 4.6,
+        "reviews": []
+    },
+    {
+        "id": "prod-015",
+        "title": "Smart thermostat",
+        "category": "Premium Home Appliances",
+        "price": 15600,
+        "description": "A minimalist smart thermostat with a high-resolution display and a rotating dial. Learns your schedule and adjusts temperature for optimal comfort and energy savings.",
+        "images": [
+            "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800",
+            "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800"
+        ],
+        "inventory": 16,
+        "featured": false,
+        "createdAt": "2025-04-10T10:00:00.000Z",
+        "updatedAt": "2025-04-10T10:00:00.000Z",
+        "rating": 4.4,
+        "reviews": []
+    },
+    {
+        "id": "prod-016",
+        "title": "Geometric shelf system",
+        "category": "Premium Decorative Objects",
+        "price": 22300,
+        "description": "A modular wall shelf system composed of powder-coated steel geometric frames. Arrange them in endless configurations to create a personalized display wall.",
+        "images": [
+            "https://images.unsplash.com/photo-1517999348451-5bfe9356039b?w=800",
+            "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800"
+        ],
+        "inventory": 9,
+        "featured": false,
+        "createdAt": "2025-04-15T10:00:00.000Z",
+        "updatedAt": "2025-04-15T10:00:00.000Z",
+        "rating": 4.5,
+        "reviews": []
+    }
+]
