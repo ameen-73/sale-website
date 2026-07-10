@@ -1,34 +1,52 @@
 const { v4: uuidv4 } = require('uuid');
-const googleSheets = require('../services/googleSheets');
+const supabase = require('../services/supabase');
 
 // GET /api/inquiries - Get all inquiries with filtering
 const getInquiries = async (req, res) => {
     try {
-        let inquiries = await googleSheets.getInquiries();
         const { status, search, page = 1, limit = 20 } = req.query;
 
+        // Initialize Supabase query
+        let query = supabase.from('inquiries').select('*', { count: 'exact' });
+
+        // Filter by status
         if (status && status !== 'all') {
-            inquiries = inquiries.filter(i => i.status === status);
+            query = query.eq('status', status);
         }
 
+        // Search by name, email, or city
         if (search) {
-            const searchLower = search.toLowerCase();
-            inquiries = inquiries.filter(i =>
-                i.name.toLowerCase().includes(searchLower) ||
-                i.email.toLowerCase().includes(searchLower) ||
-                i.city.toLowerCase().includes(searchLower)
-            );
+            query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,city.ilike.%${search}%`);
         }
 
+        // Sort by createdAt descending
+        query = query.order('createdAt', { ascending: false });
+
+        // Pagination
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
-        const total = inquiries.length;
-        const totalPages = Math.ceil(total / limitNum);
         const startIndex = (pageNum - 1) * limitNum;
+        const endIndex = startIndex + limitNum - 1;
+
+        query = query.range(startIndex, endIndex);
+
+        const { data: inquiries, error, count } = await query;
+
+        if (error) {
+            throw error;
+        }
+
+        const total = count || 0;
+        const totalPages = Math.ceil(total / limitNum);
 
         res.json({
-            inquiries: inquiries.slice(startIndex, startIndex + limitNum),
-            pagination: { page: pageNum, limit: limitNum, total, totalPages }
+            inquiries: inquiries || [],
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                total,
+                totalPages
+            }
         });
     } catch (error) {
         console.error('Error getting inquiries:', error);
@@ -39,9 +57,13 @@ const getInquiries = async (req, res) => {
 // GET /api/inquiries/:id - Get single inquiry
 const getInquiryById = async (req, res) => {
     try {
-        const inquiry = await googleSheets.getInquiryById(req.params.id);
+        const { data: inquiry, error } = await supabase
+            .from('inquiries')
+            .select('*')
+            .eq('id', req.params.id)
+            .single();
 
-        if (!inquiry || inquiry.error) {
+        if (error || !inquiry) {
             return res.status(404).json({ error: 'Inquiry not found' });
         }
 
@@ -73,9 +95,17 @@ const createInquiry = async (req, res) => {
             createdAt: new Date().toISOString()
         };
 
-        await googleSheets.addInquiry(newInquiry);
+        const { data, error } = await supabase
+            .from('inquiries')
+            .insert([newInquiry])
+            .select()
+            .single();
 
-        res.status(201).json(newInquiry);
+        if (error) {
+            throw error;
+        }
+
+        res.status(201).json(data);
     } catch (error) {
         console.error('Error creating inquiry:', error);
         res.status(500).json({ error: 'Failed to create inquiry' });
@@ -91,15 +121,18 @@ const updateInquiry = async (req, res) => {
         if (status) updateData.status = status;
         if (notes) updateData.notes = notes;
 
-        const result = await googleSheets.updateInquiry(req.params.id, updateData);
+        const { data, error } = await supabase
+            .from('inquiries')
+            .update(updateData)
+            .eq('id', req.params.id)
+            .select()
+            .single();
 
-        if (result.error) {
+        if (error || !data) {
             return res.status(404).json({ error: 'Inquiry not found' });
         }
 
-        // Fetch updated inquiry to return full data
-        const updatedInquiry = await googleSheets.getInquiryById(req.params.id);
-        res.json(updatedInquiry);
+        res.json(data);
     } catch (error) {
         console.error('Error updating inquiry:', error);
         res.status(500).json({ error: 'Failed to update inquiry' });

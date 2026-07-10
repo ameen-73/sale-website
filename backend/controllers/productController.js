@@ -1,69 +1,80 @@
 const { v4: uuidv4 } = require('uuid');
-const googleSheets = require('../services/googleSheets');
+const supabase = require('../services/supabase');
 
 // GET /api/products - Get all products with filtering and sorting
 const getProducts = async (req, res) => {
     try {
-        let products = await googleSheets.getProducts();
         const { category, minPrice, maxPrice, featured, sort, search, page = 1, limit = 12 } = req.query;
+
+        // Initialize Supabase query
+        let query = supabase.from('products').select('*', { count: 'exact' });
 
         // Filter by category
         if (category && category !== 'all') {
-            products = products.filter(p => p.category.toLowerCase() === category.toLowerCase());
+            // Case-insensitive match for category
+            query = query.ilike('category', category);
         }
 
         // Filter by price range
         if (minPrice) {
-            products = products.filter(p => p.price >= Number(minPrice));
+            query = query.gte('price', Number(minPrice));
         }
         if (maxPrice) {
-            products = products.filter(p => p.price <= Number(maxPrice));
+            query = query.lte('price', Number(maxPrice));
         }
 
         // Filter featured
         if (featured === 'true') {
-            products = products.filter(p => p.featured);
+            query = query.eq('featured', true);
         }
 
-        // Search by title
+        // Search by title or description
         if (search) {
-            const searchLower = search.toLowerCase();
-            products = products.filter(p =>
-                p.title.toLowerCase().includes(searchLower) ||
-                p.description.toLowerCase().includes(searchLower)
-            );
+            query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
         }
 
         // Sort
         if (sort) {
             switch (sort) {
                 case 'price_asc':
-                    products.sort((a, b) => a.price - b.price);
+                    query = query.order('price', { ascending: true });
                     break;
                 case 'price_desc':
-                    products.sort((a, b) => b.price - a.price);
+                    query = query.order('price', { ascending: false });
                     break;
                 case 'newest':
-                    products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    query = query.order('createdAt', { ascending: false });
                     break;
                 case 'popular':
-                    products.sort((a, b) => b.rating - a.rating);
+                    query = query.order('rating', { ascending: false });
                     break;
                 default:
+                    query = query.order('createdAt', { ascending: false });
                     break;
             }
+        } else {
+            query = query.order('createdAt', { ascending: false });
         }
 
         // Pagination
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
-        const total = products.length;
-        const totalPages = Math.ceil(total / limitNum);
         const startIndex = (pageNum - 1) * limitNum;
-        const paginatedProducts = products.slice(startIndex, startIndex + limitNum);
+        const endIndex = startIndex + limitNum - 1;
+
+        query = query.range(startIndex, endIndex);
+
+        const { data: products, error, count } = await query;
+
+        if (error) {
+            throw error;
+        }
+
+        const total = count || 0;
+        const totalPages = Math.ceil(total / limitNum);
 
         res.json({
-            products: paginatedProducts,
+            products: products || [],
             pagination: {
                 page: pageNum,
                 limit: limitNum,
@@ -81,9 +92,13 @@ const getProducts = async (req, res) => {
 // GET /api/products/:id - Get single product
 const getProductById = async (req, res) => {
     try {
-        const product = await googleSheets.getProductById(req.params.id);
+        const { data: product, error } = await supabase
+            .from('products')
+            .select('*')
+            .eq('id', req.params.id)
+            .single();
 
-        if (!product || product.error) {
+        if (error || !product) {
             return res.status(404).json({ error: 'Product not found' });
         }
 
@@ -114,9 +129,17 @@ const createProduct = async (req, res) => {
             reviews: []
         };
 
-        await googleSheets.addProduct(newProduct);
+        const { data, error } = await supabase
+            .from('products')
+            .insert([newProduct])
+            .select()
+            .single();
 
-        res.status(201).json(newProduct);
+        if (error) {
+            throw error;
+        }
+
+        res.status(201).json(data);
     } catch (error) {
         console.error('Error creating product:', error);
         res.status(500).json({ error: 'Failed to create product' });
@@ -139,15 +162,18 @@ const updateProduct = async (req, res) => {
             updatedAt: new Date().toISOString()
         };
 
-        const result = await googleSheets.updateProduct(req.params.id, updateData);
+        const { data, error } = await supabase
+            .from('products')
+            .update(updateData)
+            .eq('id', req.params.id)
+            .select()
+            .single();
 
-        if (result.error) {
+        if (error || !data) {
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        // Fetch updated product to return full data
-        const updatedProduct = await googleSheets.getProductById(req.params.id);
-        res.json(updatedProduct);
+        res.json(data);
     } catch (error) {
         console.error('Error updating product:', error);
         res.status(500).json({ error: 'Failed to update product' });
@@ -157,9 +183,13 @@ const updateProduct = async (req, res) => {
 // DELETE /api/products/:id - Delete product
 const deleteProduct = async (req, res) => {
     try {
-        const result = await googleSheets.deleteProduct(req.params.id);
+        const { data, error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', req.params.id)
+            .select();
 
-        if (result.error) {
+        if (error || !data || data.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
         }
 
