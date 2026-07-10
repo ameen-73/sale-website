@@ -1,22 +1,10 @@
-const fs = require('fs');
-const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-
-const dataPath = path.join(__dirname, '../data/inquiries.json');
-
-const readInquiries = () => {
-    const data = fs.readFileSync(dataPath, 'utf-8');
-    return JSON.parse(data);
-};
-
-const writeInquiries = (inquiries) => {
-    fs.writeFileSync(dataPath, JSON.stringify(inquiries, null, 2));
-};
+const googleSheets = require('../services/googleSheets');
 
 // GET /api/inquiries - Get all inquiries with filtering
-const getInquiries = (req, res) => {
+const getInquiries = async (req, res) => {
     try {
-        let inquiries = readInquiries();
+        let inquiries = await googleSheets.getInquiries();
         const { status, search, page = 1, limit = 20 } = req.query;
 
         if (status && status !== 'all') {
@@ -49,11 +37,14 @@ const getInquiries = (req, res) => {
 };
 
 // GET /api/inquiries/:id - Get single inquiry
-const getInquiryById = (req, res) => {
+const getInquiryById = async (req, res) => {
     try {
-        const inquiries = readInquiries();
-        const inquiry = inquiries.find(i => i.id === req.params.id);
-        if (!inquiry) return res.status(404).json({ error: 'Inquiry not found' });
+        const inquiry = await googleSheets.getInquiryById(req.params.id);
+
+        if (!inquiry || inquiry.error) {
+            return res.status(404).json({ error: 'Inquiry not found' });
+        }
+
         res.json(inquiry);
     } catch (error) {
         console.error('Error getting inquiry:', error);
@@ -62,9 +53,8 @@ const getInquiryById = (req, res) => {
 };
 
 // POST /api/inquiries - Create inquiry
-const createInquiry = (req, res) => {
+const createInquiry = async (req, res) => {
     try {
-        const inquiries = readInquiries();
         const { name, email, phone, city, roomType, houseSize, budget, style, details, preferredDate } = req.body;
 
         const newInquiry = {
@@ -83,8 +73,7 @@ const createInquiry = (req, res) => {
             createdAt: new Date().toISOString()
         };
 
-        inquiries.unshift(newInquiry);
-        writeInquiries(inquiries);
+        await googleSheets.addInquiry(newInquiry);
 
         res.status(201).json(newInquiry);
     } catch (error) {
@@ -94,19 +83,23 @@ const createInquiry = (req, res) => {
 };
 
 // PUT /api/inquiries/:id - Update inquiry status
-const updateInquiry = (req, res) => {
+const updateInquiry = async (req, res) => {
     try {
-        const inquiries = readInquiries();
-        const index = inquiries.findIndex(i => i.id === req.params.id);
-
-        if (index === -1) return res.status(404).json({ error: 'Inquiry not found' });
-
         const { status, notes } = req.body;
-        if (status) inquiries[index].status = status;
-        if (notes) inquiries[index].notes = notes;
+        const updateData = {};
 
-        writeInquiries(inquiries);
-        res.json(inquiries[index]);
+        if (status) updateData.status = status;
+        if (notes) updateData.notes = notes;
+
+        const result = await googleSheets.updateInquiry(req.params.id, updateData);
+
+        if (result.error) {
+            return res.status(404).json({ error: 'Inquiry not found' });
+        }
+
+        // Fetch updated inquiry to return full data
+        const updatedInquiry = await googleSheets.getInquiryById(req.params.id);
+        res.json(updatedInquiry);
     } catch (error) {
         console.error('Error updating inquiry:', error);
         res.status(500).json({ error: 'Failed to update inquiry' });

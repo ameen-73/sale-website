@@ -1,19 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-
-const productsPath = path.join(__dirname, '../data/products.json');
-const inquiriesPath = path.join(__dirname, '../data/inquiries.json');
-
-const readJSON = (filePath) => {
-    const data = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(data);
-};
+const googleSheets = require('../services/googleSheets');
 
 // GET /api/dashboard - Get dashboard metrics
-const getDashboard = (req, res) => {
+const getDashboard = async (req, res) => {
     try {
-        const products = readJSON(productsPath);
-        const inquiries = readJSON(inquiriesPath);
+        const products = await googleSheets.getProducts();
+        const inquiries = await googleSheets.getInquiries();
 
         // Calculate revenue metrics
         const totalRevenue = products.reduce((sum, p) => sum + (p.price * (p.inventory > 0 ? 1 : 0)), 0);

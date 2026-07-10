@@ -1,24 +1,10 @@
-const fs = require('fs');
-const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-
-const dataPath = path.join(__dirname, '../data/products.json');
-
-// Helper: Read products from JSON file
-const readProducts = () => {
-    const data = fs.readFileSync(dataPath, 'utf-8');
-    return JSON.parse(data);
-};
-
-// Helper: Write products to JSON file
-const writeProducts = (products) => {
-    fs.writeFileSync(dataPath, JSON.stringify(products, null, 2));
-};
+const googleSheets = require('../services/googleSheets');
 
 // GET /api/products - Get all products with filtering and sorting
-const getProducts = (req, res) => {
+const getProducts = async (req, res) => {
     try {
-        let products = readProducts();
+        let products = await googleSheets.getProducts();
         const { category, minPrice, maxPrice, featured, sort, search, page = 1, limit = 12 } = req.query;
 
         // Filter by category
@@ -93,12 +79,11 @@ const getProducts = (req, res) => {
 };
 
 // GET /api/products/:id - Get single product
-const getProductById = (req, res) => {
+const getProductById = async (req, res) => {
     try {
-        const products = readProducts();
-        const product = products.find(p => p.id === req.params.id);
+        const product = await googleSheets.getProductById(req.params.id);
 
-        if (!product) {
+        if (!product || product.error) {
             return res.status(404).json({ error: 'Product not found' });
         }
 
@@ -110,9 +95,8 @@ const getProductById = (req, res) => {
 };
 
 // POST /api/products - Create product
-const createProduct = (req, res) => {
+const createProduct = async (req, res) => {
     try {
-        const products = readProducts();
         const { title, category, price, description, images, inventory, featured } = req.body;
 
         const newProduct = {
@@ -130,8 +114,7 @@ const createProduct = (req, res) => {
             reviews: []
         };
 
-        products.push(newProduct);
-        writeProducts(products);
+        await googleSheets.addProduct(newProduct);
 
         res.status(201).json(newProduct);
     } catch (error) {
@@ -141,19 +124,11 @@ const createProduct = (req, res) => {
 };
 
 // PUT /api/products/:id - Update product
-const updateProduct = (req, res) => {
+const updateProduct = async (req, res) => {
     try {
-        const products = readProducts();
-        const index = products.findIndex(p => p.id === req.params.id);
-
-        if (index === -1) {
-            return res.status(404).json({ error: 'Product not found' });
-        }
-
         const { title, category, price, description, images, inventory, featured } = req.body;
 
-        products[index] = {
-            ...products[index],
+        const updateData = {
             ...(title !== undefined && { title }),
             ...(category !== undefined && { category }),
             ...(price !== undefined && { price: Number(price) }),
@@ -164,8 +139,15 @@ const updateProduct = (req, res) => {
             updatedAt: new Date().toISOString()
         };
 
-        writeProducts(products);
-        res.json(products[index]);
+        const result = await googleSheets.updateProduct(req.params.id, updateData);
+
+        if (result.error) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+
+        // Fetch updated product to return full data
+        const updatedProduct = await googleSheets.getProductById(req.params.id);
+        res.json(updatedProduct);
     } catch (error) {
         console.error('Error updating product:', error);
         res.status(500).json({ error: 'Failed to update product' });
@@ -173,17 +155,13 @@ const updateProduct = (req, res) => {
 };
 
 // DELETE /api/products/:id - Delete product
-const deleteProduct = (req, res) => {
+const deleteProduct = async (req, res) => {
     try {
-        const products = readProducts();
-        const index = products.findIndex(p => p.id === req.params.id);
+        const result = await googleSheets.deleteProduct(req.params.id);
 
-        if (index === -1) {
+        if (result.error) {
             return res.status(404).json({ error: 'Product not found' });
         }
-
-        products.splice(index, 1);
-        writeProducts(products);
 
         res.json({ message: 'Product deleted successfully' });
     } catch (error) {
