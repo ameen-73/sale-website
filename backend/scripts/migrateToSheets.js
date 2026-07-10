@@ -9,9 +9,9 @@
  * to your Google Sheet via the Apps Script web app.
  */
 
-require('dotenv').config();
-const fs = require('fs');
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+const fs = require('fs');
 const googleSheets = require('../services/googleSheets');
 
 async function migrate() {
